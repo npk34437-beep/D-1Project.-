@@ -6,179 +6,91 @@
     <title>AstroFocus - ภารกิจสำรวจสมาธิ</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #00d4ff;
-            --bg-dark: #050b18;
-            --glass: rgba(255, 255, 255, 0.1);
-        }
-
-        body, html {
-            margin: 0; padding: 0; height: 100%;
-            background: var(--bg-dark);
-            color: white;
-            font-family: 'Kanit', sans-serif;
-            overflow: hidden;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* พื้นหลังดวงดาวเคลื่อนที่ */
-        #stars-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-            z-index: -1;
-        }
-
-        /* ดีไซน์หน้าจอหลัก (Cockpit Glass) */
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 30px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2);
-            width: 90%; max-width: 500px;
-        }
-
-        h1 { font-family: 'Orbitron', sans-serif; letter-spacing: 5px; color: var(--primary); margin-bottom: 5px; }
-        .status { font-size: 0.9rem; opacity: 0.7; margin-bottom: 20px; }
-
-        /* ตัวจับเวลา */
-        #timer {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 5rem;
-            margin: 20px 0;
-            text-shadow: 0 0 20px var(--primary);
-        }
-
-        /* ปุ่มควบคุม */
-        .controls button {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            padding: 10px 30px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: 0.3s;
-            border-radius: 50px;
-            margin: 5px;
-        }
-
-        .controls button:hover {
-            background: var(--primary);
-            color: black;
-            box-shadow: 0 0 20px var(--primary);
-        }
-
-        /* ระบบเลเวล/เหรียญตรา */
-        .stats { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
-        .xp-bar { height: 10px; background: #222; border-radius: 5px; margin-top: 10px; overflow: hidden; }
-        .xp-progress { height: 100%; background: var(--primary); width: 0%; transition: 1s; }
-
+        :root { --primary: #00d4ff; --bg: #050b18; }
+        body { background: var(--bg); color: white; font-family: 'Kanit', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 40px; border-radius: 30px; text-align: center; box-shadow: 0 0 30px rgba(0,212,255,0.2); width: 320px; }
+        h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 1.5rem; letter-spacing: 3px; }
+        #timer { font-family: 'Orbitron'; font-size: 4.5rem; margin: 20px 0; text-shadow: 0 0 15px var(--primary); }
+        .btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-family: 'Orbitron'; font-size: 1rem; transition: 0.3s; }
+        .btn:hover { background: var(--primary); color: black; box-shadow: 0 0 20px var(--primary); }
+        #status { margin-top: 15px; font-size: 0.8rem; color: #aaa; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <div id="stars-container"></div>
+    <canvas id="starfield"></canvas>
 
-    <div class="glass-panel">
+    <div class="glass">
         <h1>ASTRO-FOCUS</h1>
-        <div class="status" id="mission-status">READY FOR IGNITION</div>
-        
         <div id="timer">25:00</div>
-
-        <div class="controls">
-            <button onclick="toggleTimer()" id="btn-start">IGNITION</button>
-            <button onclick="resetTimer()">ABORT</button>
-        </div>
-
-        <div class="stats">
-            <div>ระดับนักบิน: <span id="rank" style="color: var(--primary);">Rookie</span></div>
-            <div class="xp-bar"><div class="xp-progress" id="xp-fill"></div></div>
-            <p style="font-size: 0.8rem; margin-top: 5px;">สะสมพลังงานเพื่อวาร์ปไปดาวอังคาร</p>
-        </div>
+        <button class="btn" id="mainBtn" onclick="startEngine()">IGNITION</button>
+        <div id="status">System Standby</div>
     </div>
 
-    <audio id="spaceSound" loop>
+    <audio id="bgMusic" loop>
         <source src="space-ambient.mp3" type="audio/mpeg">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3" type="audio/mpeg">
     </audio>
 
     <script>
         let timeLeft = 25 * 60;
         let timerId = null;
         let isRunning = false;
-        let xp = 0;
 
-        const timerDisplay = document.getElementById('timer');
-        const statusDisplay = document.getElementById('mission-status');
-        const startBtn = document.getElementById('btn-start');
-        const spaceSound = document.getElementById('spaceSound');
-        const xpFill = document.getElementById('xp-fill');
+        function startEngine() {
+            const btn = document.getElementById('mainBtn');
+            const status = document.getElementById('status');
+            const music = document.getElementById('bgMusic');
 
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            timerDisplay.textContent = ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')};
-        }
-
-        function toggleTimer() {
-            if (isRunning) {
-                clearInterval(timerId);
-                statusDisplay.textContent = "MISSION PAUSED";
-                startBtn.textContent = "RESUME";
-                spaceSound.pause();
-            } else {
-                statusDisplay.textContent = "PROCEEDING TO DEEP SPACE...";
-                startBtn.textContent = "PAUSE";
-                spaceSound.play().catch(e => console.log("คลิกที่จอก่อนเพื่อเริ่มเสียง"));
+            if (!isRunning) {
+                isRunning = true;
+                btn.innerText = "PAUSE";
+                status.innerText = "Mission in Progress...";
+                music.play().catch(e => console.log("Audio play deferred"));
                 
                 timerId = setInterval(() => {
                     timeLeft--;
-                    updateDisplay();
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    document.getElementById('timer').innerText = ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
+                    
                     if (timeLeft <= 0) {
-                        finishMission();
+                        clearInterval(timerId);
+                        alert("ภารกิจสำเร็จ! กลับสู่ฐานทัพได้");
+                        resetMission();
                     }
                 }, 1000);
+            } else {
+                isRunning = false;
+                btn.innerText = "RESUME";
+                status.innerText = "Mission Paused";
+                clearInterval(timerId);
+                music.pause();
             }
-            isRunning = !isRunning;
         }
 
-        function finishMission() {
-            clearInterval(timerId);
-            statusDisplay.textContent = "MISSION ACCOMPLISHED!";
-            alert("ยินดีด้วย! คุณรวบรวมชิ้นส่วนดาวเคราะห์ได้ 1 ชิ้น");
-            xp += 20; // เพิ่ม XP
-            xpFill.style.width = xp + "%";
-            if(xp >= 100) document.getElementById('rank').textContent = "Commander";
-            resetTimer();
+        function resetMission() {
+            location.reload();
         }
 
-        function resetTimer() {
-            clearInterval(timerId);
-            timeLeft = 25 * 60;
-            isRunning = false;
-            updateDisplay();
-            statusDisplay.textContent = "READY FOR IGNITION";
-            startBtn.textContent = "IGNITION";
-            spaceSound.pause();
-            spaceSound.currentTime = 0;
-        }
+        // Starfield Animation
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const stars = Array(200).fill().map(() => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2 }));
 
-        // สร้างดาวเล่นๆ ด้วย JS
-        const starsContainer = document.getElementById('stars-container');
-        for (let i = 0; i < 150; i++) {
-            const star = document.createElement('div');
-            star.style.position = 'absolute';
-            star.style.width = Math.random() * 3 + 'px';
-            star.style.height = star.style.width;
-            star.style.background = 'white';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.borderRadius = '50%';
-            star.style.opacity = Math.random();
-            starsContainer.appendChild(star);
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            stars.forEach(s => {
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+                ctx.fill();
+            });
         }
+        drawStars();
     </script>
 </body>
 </html>
