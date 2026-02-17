@@ -3,94 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AstroFocus - ภารกิจสำรวจสมาธิ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300&display=swap" rel="stylesheet">
+    <title>Cosmic Focus - ระบบสุริยะแห่งสมาธิ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #00d4ff; --bg: #050b18; }
-        body { background: var(--bg); color: white; font-family: 'Kanit', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 40px; border-radius: 30px; text-align: center; box-shadow: 0 0 30px rgba(0,212,255,0.2); width: 320px; }
-        h1 { font-family: 'Orbitron'; color: var(--primary); font-size: 1.5rem; letter-spacing: 3px; }
-        #timer { font-family: 'Orbitron'; font-size: 4.5rem; margin: 20px 0; text-shadow: 0 0 15px var(--primary); }
-        .btn { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 25px; border-radius: 50px; cursor: pointer; font-family: 'Orbitron'; font-size: 1rem; transition: 0.3s; }
-        .btn:hover { background: var(--primary); color: black; box-shadow: 0 0 20px var(--primary); }
-        #status { margin-top: 15px; font-size: 0.8rem; color: #aaa; text-transform: uppercase; }
+        :root {
+            --neon-blue: #00d4ff;
+            --neon-pink: #ff00de;
+            --space-black: #05070a;
+        }
+
+        body {
+            background-color: var(--space-black);
+            color: white;
+            font-family: 'Kanit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 30px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 5px;
+            color: var(--neon-blue);
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        #status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--neon-pink);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        /* วงแหวนนาฬิกา */
+        .timer-display {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .timer-display.active {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px var(--neon-blue); }
+            50% { box-shadow: 0 0 25px var(--neon-blue); }
+            100% { box-shadow: 0 0 10px var(--neon-blue); }
+        }
+
+        #timer-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.2rem;
+            margin: 0;
+        }
+
+        /* เกร็ดความรู้ */
+        #fact-box {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: #ccc;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed rgba(0, 212, 255, 0.2);
+        }
+
+        /* ปุ่มเลือกดาว */
+        .planet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .planet-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65rem;
+            transition: 0.3s;
+        }
+
+        .planet-btn:hover, .planet-btn.selected {
+            background: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-blue);
+            border-color: var(--neon-blue);
+        }
+
+        /* ปุ่มเริ่มงาน */
+        .main-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 50px;
+            border: none;
+            background: var(--neon-pink);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--neon-pink);
+            transition: 0.3s;
+        }
+
+        .main-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.2);
+        }
     </style>
 </head>
 <body>
 
-    <canvas id="starfield"></canvas>
+    <div class="container">
+        <h1>COSMIC FOCUS</h1>
+        <div id="status">SELECT YOUR MISSION</div>
 
-    <div class="glass">
-        <h1>ASTRO-FOCUS</h1>
-        <div id="timer">25:00</div>
-        <button class="btn" id="mainBtn" onclick="startEngine()">IGNITION</button>
-        <div id="status">System Standby</div>
+        <div class="timer-display" id="timer-box">
+            <p id="timer-num">00:00</p>
+        </div>
+
+        <div id="fact-box">"ความสำเร็จเริ่มต้นที่สมาธิ เลือกดวงดาวเพื่อออกเดินทาง"</div>
+
+        <div class="planet-grid">
+            <button class="planet-btn" onclick="selectPlanet(this, 'MERCURY', 15, 'ดาวพุธ: ไม่มีชั้นบรรยากาศห่อหุ้ม ทำให้มีหลุมอุกกาบาตเต็มไปหมดเหมือนดวงจันทร์')">MERCURY</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'VENUS', 20, 'ดาวศุกร์: หมุนรอบตัวเองช้ามาก ช้าจนหนึ่งวันยาวนานกว่าหนึ่งปีบนตัวมันเอง')">VENUS</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'EARTH', 25, 'โลก: มีน้ำปกคลุมผิวหน้าถึง 70% เป็นดาวดวงเดียวที่ยืนยันว่ามีสิ่งมีชีวิต')">EARTH</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'MOON', 10, 'ดวงจันทร์: มีแรงโน้มถ่วงเพียง 1/6 ของโลก ถ้าคุณหนัก 60 กก. บนดวงจันทร์จะเหลือ 10 กก.')">MOON</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'MARS', 30, 'ดาวอังคาร: มีพายุฝุ่นที่ใหญ่ที่สุดในระบบสุริยะ และอาจปกคลุมได้ทั้งดวงดาว')">MARS</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'JUPITER', 40, 'ดาวพฤหัสฯ: มีดวงจันทร์บริวารมากถึง 95 ดวง และเป็นดาวที่มีความเร็วในการหมุนสูงสุด')">JUPITER</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'SATURN', 45, 'ดาวเสาร์: วงแหวนไม่ได้เป็นแผ่นเดียว แต่ประกอบด้วยน้ำแข็งและหินนับล้านชิ้น')">SATURN</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'URANUS', 50, 'ดาวยูเรนัส: เป็นยักษ์น้ำแข็งที่หนาวเหน็บที่สุด อุณหภูมิต่ำสุดถึง -224 องศาเซลเซียส')">URANUS</button>
+            <button class="planet-btn" onclick="selectPlanet(this, 'NEPTUNE', 60, 'ดาวเนปจูน: อยู่ห่างจากดวงอาทิตย์มากที่สุด จนต้องใช้เวลา 165 ปีโลก ถึงจะโคจรครบ 1 รอบ')">NEPTUNE</button>
+        </div>
+
+        <button class="main-btn" id="start-btn" onclick="toggleTimer()">START MISSION</button>
     </div>
 
-    <audio id="bgMusic" loop>
-        <source src="space-ambient.mp3" type="audio/mpeg">
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3" type="audio/mpeg">
-    </audio>
-
     <script>
-        let timeLeft = 25 * 60;
-        let timerId = null;
-        let isRunning = false;
+        let timeLeft = 0;
+        let timerInterval = null;
+        let currentPlanet = "";
+        let audio = new Audio();
 
-        function startEngine() {
-            const btn = document.getElementById('mainBtn');
-            const status = document.getElementById('status');
-            const music = document.getElementById('bgMusic');
+        function selectPlanet(btn, name, mins, fact) {
+            if (timerInterval) return;
 
-            if (!isRunning) {
-                isRunning = true;
-                btn.innerText = "PAUSE";
-                status.innerText = "Mission in Progress...";
-                music.play().catch(e => console.log("Audio play deferred"));
-                
-                timerId = setInterval(() => {
+            document.querySelectorAll('.planet-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            currentPlanet = name;
+            timeLeft = mins * 60;
+            audio.src = ${name.toLowerCase()}.mp3;
+            audio.loop = true;
+
+            document.getElementById('status').innerText = name + " MISSION";
+            document.getElementById('fact-box').innerText = fact;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            document.getElementById('timer-num').innerText = 
+                ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')};
+        }
+
+        function toggleTimer() {
+            if (!currentPlanet) { alert("กรุณาเลือกดวงดาวก่อน!"); return; }
+
+            const btn = document.getElementById('start-btn');
+            const timerBox = document.getElementById('timer-box');
+
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                audio.pause();
+                btn.innerText = "RESUME MISSION";
+                timerBox.classList.remove('active');
+            } else {
+                timerInterval = setInterval(() => {
                     timeLeft--;
-                    let m = Math.floor(timeLeft / 60);
-                    let s = timeLeft % 60;
-                    document.getElementById('timer').innerText = ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
-                    
+                    updateDisplay();
                     if (timeLeft <= 0) {
-                        clearInterval(timerId);
-                        alert("ภารกิจสำเร็จ! กลับสู่ฐานทัพได้");
-                        resetMission();
+                        clearInterval(timerInterval);
+                        alert("ภารกิจสำเร็จ! คุณเก่งมากที่รักษาความสมาธิไว้ได้");
+                        location.reload();
                     }
                 }, 1000);
-            } else {
-                isRunning = false;
-                btn.innerText = "RESUME";
-                status.innerText = "Mission Paused";
-                clearInterval(timerId);
-                music.pause();
+                audio.play().catch(() => console.log("รอไฟล์เสียง..."));
+                btn.innerText = "PAUSE MISSION";
+                timerBox.classList.add('active');
             }
         }
 
-        function resetMission() {
-            location.reload();
-        }
-
-        // Starfield Animation
-        const canvas = document.getElementById('starfield');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const stars = Array(200).fill().map(() => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, size: Math.random()*2 }));
-
-        function drawStars() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
-            stars.forEach(s => {
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
-                ctx.fill();
-            });
-        }
-        drawStars();
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden && timerInterval) {
+                toggleTimer();
+                alert("เตือนจากฐานบัญชาการ: ยานหยุดทำงานเพราะคุณออกนอกเส้นทาง (แอบออกจากหน้าแอป)!");
+            }
+        });
     </script>
 </body>
 </html>
